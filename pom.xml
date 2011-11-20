@@ -65,5 +65,12 @@
   		<version>0.0.1-SNAPSHOT</version>
   		<scope>compile</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>com.bekvon</groupId>
+  		<artifactId>Residence</artifactId>
+  		<version>2.4.2</version>
+  		<scope>system</scope>
+  		<systemPath>${project.basedir}/Residence.jar</systemPath>
+  	</dependency>
   </dependencies>
 </project>
