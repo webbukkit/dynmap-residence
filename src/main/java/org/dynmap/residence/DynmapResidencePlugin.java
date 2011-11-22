@@ -199,10 +199,18 @@ public class DynmapResidencePlugin extends JavaPlugin {
     }
     
     public void onEnable() {
+    	info("initializing");
         Plugin p = this.getServer().getPluginManager().getPlugin("dynmap"); /* Find dynmap */
         if(p == null) {
-            severe("Error loading dynmap API!");
+            severe("Error finding dynmap!");
             return;
+        }
+        if(!p.isEnabled()) {	/* Make sure it's enabled before us */
+        	getServer().getPluginManager().enablePlugin(p);
+        	if(!p.isEnabled()) {
+        		severe("Failed to enable dynmap!");
+        		return;
+        	}
         }
         api = (DynmapAPI)p; /* Get API */
         /* Now, get markers API */
@@ -216,6 +224,13 @@ public class DynmapResidencePlugin extends JavaPlugin {
         if(p == null) {
             severe("Error loading Residence");
             return;
+        }
+        if(!p.isEnabled()) {	/* Make sure it's enabled before us */
+        	getServer().getPluginManager().enablePlugin(p);
+        	if(!p.isEnabled()) {
+        		severe("Failed to enable Residence!");
+        		return;
+        	}
         }
         res = (Residence)p;
         
