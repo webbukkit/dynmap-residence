@@ -11,27 +11,33 @@ import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Event.Type;
+import org.bukkit.event.server.PluginEnableEvent;
+import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.dynmap.DynmapAPI;
 import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerSet;
-import org.dynmap.markers.Marker;
+
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
-import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 
 public class DynmapResidencePlugin extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Minecraft");
     private static final String LOG_PREFIX = "[dynmap-residence] ";
     private static final String DEF_INFOWINDOW = "<div class=\"infowindow\"><span style=\"font-size:120%;\">%regionname%</span><br /> Owner <span style=\"font-weight:bold;\">%playerowners%</span><br />Flags<br /><span style=\"font-weight:bold;\">%flags%</span></div>";
+    Plugin dynmap;
     DynmapAPI api;
     MarkerAPI markerapi;
     Residence res;
     ResidenceManager resmgr;
+    boolean stop;
     
     FileConfiguration cfg;
     MarkerSet set;
@@ -77,7 +83,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
 
     private class ResidenceUpdate implements Runnable {
         public void run() {
-            updateResidence();
+            if(!stop)
+                updateResidence();
         }
     }
     
@@ -197,44 +204,52 @@ public class DynmapResidencePlugin extends JavaPlugin {
         getServer().getScheduler().scheduleSyncDelayedTask(this, new ResidenceUpdate(), updperiod);
         
     }
+
+    private class OurServerListener extends ServerListener {
+        @Override
+        public void onPluginEnable(PluginEnableEvent event) {
+            Plugin p = event.getPlugin();
+            String name = p.getDescription().getName();
+            if(name.equals("dynmap") || name.equals("Residence")) {
+                if(dynmap.isEnabled() && res.isEnabled())
+                    activate();
+            }
+        }
+    }
     
     public void onEnable() {
-    	info("initializing");
-        Plugin p = this.getServer().getPluginManager().getPlugin("dynmap"); /* Find dynmap */
-        if(p == null) {
-            severe("Error finding dynmap!");
+        info("initializing");
+        PluginManager pm = getServer().getPluginManager();
+        /* Get dynmap */
+        dynmap = pm.getPlugin("dynmap");
+        if(dynmap == null) {
+            severe("Cannot find dynmap!");
             return;
         }
-        if(!p.isEnabled()) {	/* Make sure it's enabled before us */
-        	getServer().getPluginManager().enablePlugin(p);
-        	if(!p.isEnabled()) {
-        		severe("Failed to enable dynmap!");
-        		return;
-        	}
+        api = (DynmapAPI)dynmap; /* Get API */
+        /* Get Residence */
+        Plugin p = pm.getPlugin("Residence");
+        if(p == null) {
+            severe("Cannot find Residence!");
+            return;
         }
-        api = (DynmapAPI)p; /* Get API */
+        res = (Residence)p;
+        /* If both enabled, activate */
+        if(dynmap.isEnabled() && res.isEnabled())
+            activate();
+        else
+            getServer().getPluginManager().registerEvent(Type.PLUGIN_ENABLE, new OurServerListener(), Priority.Monitor, this);        
+    }
+
+    private void activate() {
         /* Now, get markers API */
         markerapi = api.getMarkerAPI();
         if(markerapi == null) {
             severe("Error loading dynmap marker API!");
             return;
         }
-        /* Find residence */
-        p = this.getServer().getPluginManager().getPlugin("Residence"); /* Find residence */
-        if(p == null) {
-            severe("Error loading Residence");
-            return;
-        }
-        if(!p.isEnabled()) {	/* Make sure it's enabled before us */
-        	getServer().getPluginManager().enablePlugin(p);
-        	if(!p.isEnabled()) {
-        		severe("Failed to enable Residence!");
-        		return;
-        	}
-        }
-        res = (Residence)p;
         
-        resmgr = res.getResidenceManager(); /* Get residence manager */
+        resmgr = Residence.getResidenceManager(); /* Get residence manager */
         
         /* Load configuration */
         FileConfiguration cfg = getConfig();
@@ -278,10 +293,11 @@ public class DynmapResidencePlugin extends JavaPlugin {
         int per = cfg.getInt("update.period", 300);
         if(per < 15) per = 15;
         updperiod = (long)(per*20);
+        stop = false;
         
         getServer().getScheduler().scheduleSyncDelayedTask(this, new ResidenceUpdate(), 40);   /* First time is 2 seconds */
         
-        info("version " + this.getDescription().getVersion() + " is enabled");
+        info("version " + this.getDescription().getVersion() + " is activated");
     }
 
     public void onDisable() {
@@ -290,6 +306,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
             set = null;
         }
         resareas.clear();
+        stop = true;
     }
 
 }
