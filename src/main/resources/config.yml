@@ -3,6 +3,8 @@
 update:
   # Seconds between checks for Residence updates
   period: 300
+  # Listen for update events from Residence, and do immediate updates (if true)
+  onchange: true
 
 layer:
   name: "Residence"

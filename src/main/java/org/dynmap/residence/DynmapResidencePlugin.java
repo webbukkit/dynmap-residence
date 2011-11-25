@@ -11,6 +11,9 @@ import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.CustomEventListener;
+import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.server.PluginEnableEvent;
@@ -83,11 +86,18 @@ public class DynmapResidencePlugin extends JavaPlugin {
     }
 
     private class ResidenceUpdate implements Runnable {
+    	public boolean repeat;
         public void run() {
-            if(!stop)
+            if(!stop) {
                 updateResidence();
+                if(repeat)
+                	getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, ResidenceUpdate.this, updperiod);
+                else
+                	pending_oneshot = null;
+            }
         }
     }
+    private ResidenceUpdate pending_oneshot = null;
     
     private Map<String, AreaMarker> resareas = new HashMap<String, AreaMarker>();
 
@@ -203,7 +213,6 @@ public class DynmapResidencePlugin extends JavaPlugin {
         /* Loop through residences */
         String[] resids = resmgr.getResidenceList();
         for(String resid : resids) {
-            /*TODO: check if in include list, or not in exclude list */
             ClaimedResidence res = resmgr.getByName(resid);
             if(res == null) continue;
             /* Handle residence */
@@ -214,10 +223,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
             oldm.deleteMarker();
         }
         /* And replace with new map */
-        resareas = newmap;
-        
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new ResidenceUpdate(), updperiod);
-        
+        resareas = newmap;        
     }
 
     private class OurServerListener extends ServerListener {
@@ -230,6 +236,23 @@ public class DynmapResidencePlugin extends JavaPlugin {
                     activate();
             }
         }
+    }
+    
+    private class OurCustomEventListener extends CustomEventListener {
+    	@Override
+    	public void onCustomEvent(Event evt) {
+    		String typ = evt.getEventName();
+    		if(typ.startsWith("RESIDENCE_")) {
+    			if((evt instanceof Cancellable) && ((Cancellable)evt).isCancelled())
+    				return;
+    			if(typ.equals("RESIDENCE_CREATE") || typ.equals("RESIDENCE_FLAG_CHANGE") || typ.equals("RESIDENCE_OWNER_CHANGE") || typ.equals("RESIDENCE_DELETE")) {
+    				if(pending_oneshot == null) {
+    					pending_oneshot = new ResidenceUpdate();
+    			        getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, pending_oneshot, 20);   /* Delay a second to let other triggers fire */
+    				}
+    			}
+    		}
+    	}
     }
     
     public void onEnable() {
@@ -310,7 +333,13 @@ public class DynmapResidencePlugin extends JavaPlugin {
         updperiod = (long)(per*20);
         stop = false;
         
-        getServer().getScheduler().scheduleSyncDelayedTask(this, new ResidenceUpdate(), 40);   /* First time is 2 seconds */
+        ResidenceUpdate updater = new ResidenceUpdate();
+        updater.repeat = true;
+        getServer().getScheduler().scheduleSyncDelayedTask(this, updater, 40);   /* First time is 2 seconds */
+        
+        /* Register custom event listener - listen for residence change events */
+        if(cfg.getBoolean("update.onchange", true))
+        	getServer().getPluginManager().registerEvent(Type.CUSTOM_EVENT, new OurCustomEventListener(), Priority.Monitor, this);
         
         info("version " + this.getDescription().getVersion() + " is activated");
     }
