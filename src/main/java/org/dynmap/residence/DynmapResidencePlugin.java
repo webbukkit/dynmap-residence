@@ -27,6 +27,7 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
+import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 
 public class DynmapResidencePlugin extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Minecraft");
@@ -90,11 +91,25 @@ public class DynmapResidencePlugin extends JavaPlugin {
     
     private Map<String, AreaMarker> resareas = new HashMap<String, AreaMarker>();
 
+    private static final String FLAGS[] = { "use", "move", "build", "tp",
+    	"ignite", "container", "subzone", "destroy", "place", "bucket", "bank",
+    	"pvp", "damage", "monsters", "firespread", "tnt", "creeper",
+    	"flow", "healing", "animals", "lavaflow", "waterflow", "physics",
+    	"piston", "spread" };
+    
     private String formatInfoWindow(String resid, ClaimedResidence res) {
         String v = "<div class=\"regioninfo\">"+infowindow+"</div>";
         v = v.replaceAll("%regionname%", res.getName());
         v = v.replaceAll("%playerowners%", res.getOwner());
-        v = v.replaceAll("%flags%", res.getPermissions().listFlags());
+        ResidencePermissions p = res.getPermissions();
+        String flgs = "";
+        for(int i = 0; i < FLAGS.length; i++) {
+        	if(p.isSet(FLAGS[i])) {
+        		if(flgs.length() > 0) flgs += "<br/>";
+        		flgs += FLAGS[i] + ": " + p.has(FLAGS[i], false);
+        	}
+        }
+        v = v.replaceAll("%flags%", flgs);
         return v;
     }
     
