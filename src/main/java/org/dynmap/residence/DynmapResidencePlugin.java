@@ -295,13 +295,20 @@ public class DynmapResidencePlugin extends JavaPlugin {
         this.saveConfig();  /* Save updates, if needed */
         
         /* Now, add marker set for mobs (make it transient) */
-        set = markerapi.createMarkerSet("residence.markerset", cfg.getString("layer.name", "Residence"), null, false);
+        set = markerapi.getMarkerSet("residence.markerset");
+        if(set == null)
+            set = markerapi.createMarkerSet("residence.markerset", cfg.getString("layer.name", "Residence"), null, false);
+        else
+            set.setMarkerSetLabel(cfg.getString("layer.name", "Residence"));
         if(set == null) {
             severe("Error creating marker set");
             return;
         }
         set.setLayerPriority(cfg.getInt("layer.layerprio", 10));
         set.setHideByDefault(cfg.getBoolean("layer.hidebydefault", false));
+        int minzoom = cfg.getInt("layer.minzoom", 0);
+        if(minzoom > 0)
+            set.setMinZoom(minzoom);
         use3d = cfg.getBoolean("use3dregions", false);
         maxdepth = cfg.getInt("resdepth", 2);
         if(maxdepth < 1) maxdepth = 1;
