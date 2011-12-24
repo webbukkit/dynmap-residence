@@ -123,19 +123,19 @@ public class DynmapResidencePlugin extends JavaPlugin {
         return v;
     }
     
-    private boolean isVisible(String id) {
+    private boolean isVisible(String id, String worldname) {
         if((visible != null) && (visible.size() > 0)) {
-            if(visible.contains(id) == false) {
+            if((visible.contains(id) == false) && (visible.contains("world:" + worldname) == false)) {
                 return false;
             }
         }
         if((hidden != null) && (hidden.size() > 0)) {
-            if(hidden.contains(id))
+            if(hidden.contains(id) || hidden.contains("world:" + worldname))
                 return false;
         }
         return true;
     }
-    
+        
     private void addStyle(String resid, AreaMarker m) {
         AreaStyle as = cusstyle.get(resid);
         if(as == null)
@@ -161,38 +161,39 @@ public class DynmapResidencePlugin extends JavaPlugin {
         String desc = formatInfoWindow(resid, res);
         
         /* Handle cubiod areas */
-        if(isVisible(resid)) {
-            CuboidArea[] areas = res.getAreaArray();
-            for(int i = 0; i < areas.length; i++) {
-                String id = resid + "%" + i;    /* Make area ID for cubiod */
-                Location l0 = areas[i].getLowLoc();
-                Location l1 = areas[i].getHighLoc();
-                /* Make outline */
-                x[0] = l0.getX(); z[0] = l0.getZ();
-                x[1] = l0.getX(); z[1] = l1.getZ()+1.0;
-                x[2] = l1.getX() + 1.0; z[2] = l1.getZ()+1.0;
-                x[3] = l1.getX() + 1.0; z[3] = l0.getZ();
+        CuboidArea[] areas = res.getAreaArray();
+        for(int i = 0; i < areas.length; i++) {
+            String wname = areas[i].getWorld().getName();
+            if(isVisible(resid, wname) == false) continue;
             
-                AreaMarker m = resareas.remove(id); /* Existing area? */
-                if(m == null) {
-                    m = set.createAreaMarker(id, name, false, areas[i].getWorld().getName(), x, z, false);
-                    if(m == null) continue;
-                }
-                else {
-                    m.setCornerLocations(x, z); /* Replace corner locations */
-                    m.setLabel(name);   /* Update label */
-                }
-                if(use3d) { /* If 3D? */
-                    m.setRangeY(l1.getY()+1.0, l0.getY());
-                }
-                m.setDescription(desc); /* Set popup */
-            
-                /* Set line and fill properties */
-                addStyle(resid, m);
-
-                /* Add to map */
-                newmap.put(id, m);
+            String id = resid + "%" + i;    /* Make area ID for cubiod */
+            Location l0 = areas[i].getLowLoc();
+            Location l1 = areas[i].getHighLoc();
+            /* Make outline */
+            x[0] = l0.getX(); z[0] = l0.getZ();
+            x[1] = l0.getX(); z[1] = l1.getZ()+1.0;
+            x[2] = l1.getX() + 1.0; z[2] = l1.getZ()+1.0;
+            x[3] = l1.getX() + 1.0; z[3] = l0.getZ();
+        
+            AreaMarker m = resareas.remove(id); /* Existing area? */
+            if(m == null) {
+                m = set.createAreaMarker(id, name, false, wname, x, z, false);
+                if(m == null) continue;
             }
+            else {
+                m.setCornerLocations(x, z); /* Replace corner locations */
+                m.setLabel(name);   /* Update label */
+            }
+            if(use3d) { /* If 3D? */
+                m.setRangeY(l1.getY()+1.0, l0.getY());
+            }
+            m.setDescription(desc); /* Set popup */
+        
+            /* Set line and fill properties */
+            addStyle(resid, m);
+
+            /* Add to map */
+            newmap.put(id, m);
         }
         if(depth < maxdepth) {  /* If not at max, check subzones */
             String[] subids = res.listSubzones();
