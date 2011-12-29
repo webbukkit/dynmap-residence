@@ -109,8 +109,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
     
     private String formatInfoWindow(String resid, ClaimedResidence res) {
         String v = "<div class=\"regioninfo\">"+infowindow+"</div>";
-        v = v.replaceAll("%regionname%", res.getName());
-        v = v.replaceAll("%playerowners%", res.getOwner());
+        v = v.replace("%regionname%", res.getName());
+        v = v.replace("%playerowners%", res.getOwner());
         ResidencePermissions p = res.getPermissions();
         String flgs = "";
         for(int i = 0; i < FLAGS.length; i++) {
@@ -119,7 +119,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         		flgs += FLAGS[i] + ": " + p.has(FLAGS[i], false);
         	}
         }
-        v = v.replaceAll("%flags%", flgs);
+        v = v.replace("%flags%", flgs);
         return v;
     }
     
