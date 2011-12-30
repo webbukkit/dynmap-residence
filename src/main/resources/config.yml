@@ -43,6 +43,7 @@ hiddenregions: [ ]
 custstyle:
   customizedregion:
     strokeColor: "#00FF00"
+    y: 78
   anotherregion.subzone:
     strokeColor: "#007F00"
   

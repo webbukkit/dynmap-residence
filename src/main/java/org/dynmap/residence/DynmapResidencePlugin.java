@@ -64,6 +64,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         int strokeweight;
         String fillcolor;
         double fillopacity;
+        int y;
 
         AreaStyle(FileConfiguration cfg, String path, AreaStyle def) {
             strokecolor = cfg.getString(path+".strokeColor", def.strokecolor);
@@ -71,6 +72,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
             strokeweight = cfg.getInt(path+".strokeWeight", def.strokeweight);
             fillcolor = cfg.getString(path+".fillColor", def.fillcolor);
             fillopacity = cfg.getDouble(path+".fillOpacity", def.fillopacity);
+            y = cfg.getInt(path+".y", def.y);
         }
 
         AreaStyle(FileConfiguration cfg, String path) {
@@ -79,6 +81,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
             strokeweight = cfg.getInt(path+".strokeWeight", 3);
             fillcolor = cfg.getString(path+".fillColor", "#FF0000");
             fillopacity = cfg.getDouble(path+".fillOpacity", 0.35);
+            y = cfg.getInt(path+".y", 64);
         }
     }
     
@@ -196,6 +199,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         }
         m.setLineStyle(as.strokeweight, as.strokeopacity, sc);
         m.setFillStyle(as.fillopacity, fc);
+        m.setRangeY(as.y, as.y);
     }
     
     /* Handle specific residence */
