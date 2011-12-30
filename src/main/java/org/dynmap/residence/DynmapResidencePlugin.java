@@ -27,6 +27,8 @@ import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerSet;
 
 import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.economy.TransactionManager;
+import com.bekvon.bukkit.residence.economy.rent.RentManager;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
@@ -41,6 +43,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
     MarkerAPI markerapi;
     Residence res;
     ResidenceManager resmgr;
+    RentManager rentmgr;
+    TransactionManager transmgr;
     boolean stop;
     
     FileConfiguration cfg;
@@ -116,10 +120,53 @@ public class DynmapResidencePlugin extends JavaPlugin {
         for(int i = 0; i < FLAGS.length; i++) {
         	if(p.isSet(FLAGS[i])) {
         		if(flgs.length() > 0) flgs += "<br/>";
-        		flgs += FLAGS[i] + ": " + p.has(FLAGS[i], false);
+        		boolean f = p.has(FLAGS[i], false);
+        		flgs += FLAGS[i] + ": " + f;
+                v = v.replace("%flag."+FLAGS[i]+"%", Boolean.toString(f));
         	}
+        	else
+                v = v.replace("%flag."+FLAGS[i]+"%", "");
+
         }
         v = v.replace("%flags%", flgs);
+
+        if(rentmgr != null) {
+            boolean isrented = rentmgr.isRented(resid);
+            boolean isforrent = rentmgr.isForRent(resid);
+            v = v.replace("%isforrent%", Boolean.toString(isforrent));
+            v = v.replace("%isrented%", Boolean.toString(isrented));
+            String id = "";
+            if(isrented)
+                id = rentmgr.getRentingPlayer(resid);
+            v = v.replace("%renter%", id);
+            String rent = "";
+            String rentdays = "";
+            if(isforrent) {
+                rent = Integer.toString(rentmgr.getCostOfRent(resid));
+                rentdays = Integer.toString(rentmgr.getRentDays(resid));
+            }
+            v = v.replace("%rent%", rent);
+            v = v.replace("%rentdays%", rent);
+        }
+        else {
+            v = v.replace("%isforrent%", "");
+            v = v.replace("%isrented%", "");
+            v = v.replace("%renter%", "");
+            v = v.replace("%rent%", "");
+            v = v.replace("%rentdays%", "");
+        }
+        if(transmgr != null) {
+            boolean forsale = transmgr.isForSale(resid);
+            v = v.replace("%isforsale%", Boolean.toString(transmgr.isForSale(resid)));
+            String price = "";
+            if(forsale)
+                price = Integer.toString(transmgr.getSaleAmount(resid));
+            v = v.replace("%price%", price);
+        }
+        else {
+            v = v.replace("%isforsale%", "");
+            v = v.replace("%price%", "");
+        }
         return v;
     }
     
@@ -211,13 +258,19 @@ public class DynmapResidencePlugin extends JavaPlugin {
     private void updateResidence() {
         Map<String,AreaMarker> newmap = new HashMap<String,AreaMarker>(); /* Build new map */
  
-        /* Loop through residences */
-        String[] resids = resmgr.getResidenceList();
-        for(String resid : resids) {
-            ClaimedResidence res = resmgr.getByName(resid);
-            if(res == null) continue;
-            /* Handle residence */
-            handleResidence(resid, res, newmap, 1);
+        resmgr = Residence.getResidenceManager(); /* Get residence manager */
+        rentmgr = Residence.getRentManager();
+        transmgr = Residence.getTransactionManager();
+        
+        if(resmgr != null) {
+            /* Loop through residences */
+            String[] resids = resmgr.getResidenceList();
+            for(String resid : resids) {
+                ClaimedResidence res = resmgr.getByName(resid);
+                if(res == null) continue;
+                /* Handle residence */
+                handleResidence(resid, res, newmap, 1);
+            }
         }
         /* Now, review old map - anything left is gone */
         for(AreaMarker oldm : resareas.values()) {
