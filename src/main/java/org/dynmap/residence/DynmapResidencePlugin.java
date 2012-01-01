@@ -149,7 +149,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
                 rentdays = Integer.toString(rentmgr.getRentDays(resid));
             }
             v = v.replace("%rent%", rent);
-            v = v.replace("%rentdays%", rent);
+            v = v.replace("%rentdays%", rentdays);
         }
         else {
             v = v.replace("%isforrent%", "");
