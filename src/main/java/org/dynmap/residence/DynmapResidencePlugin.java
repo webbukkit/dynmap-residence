@@ -29,6 +29,7 @@ import org.dynmap.markers.MarkerSet;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.economy.TransactionManager;
 import com.bekvon.bukkit.residence.economy.rent.RentManager;
+import com.bekvon.bukkit.residence.event.ResidenceEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
@@ -299,6 +300,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
     private class OurCustomEventListener extends CustomEventListener {
     	@Override
     	public void onCustomEvent(Event evt) {
+    	    if((evt instanceof ResidenceEvent) == false)
+    	        return;
     		String typ = evt.getEventName();
     		if(typ.startsWith("RESIDENCE_")) {
     			if((evt instanceof Cancellable) && ((Cancellable)evt).isCancelled())
@@ -377,7 +380,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         cusstyle = new HashMap<String, AreaStyle>();
         ConfigurationSection sect = cfg.getConfigurationSection("custstyle");
         if(sect != null) {
-            Set<String> ids = sect.getKeys(false);
+            Set<String> ids = sect.getKeys(true);
             
             for(String id : ids) {
                 cusstyle.put(id, new AreaStyle(cfg, "custstyle." + id, defstyle));
