@@ -16,8 +16,10 @@ import org.bukkit.event.CustomEventListener;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginEnableEvent;
-import org.bukkit.event.server.ServerListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -285,8 +287,9 @@ public class DynmapResidencePlugin extends JavaPlugin {
         resareas = newmap;        
     }
 
-    private class OurServerListener extends ServerListener {
-        @Override
+    private class OurServerListener implements Listener {
+        @SuppressWarnings("unused")
+        @EventHandler(priority=EventPriority.MONITOR)
         public void onPluginEnable(PluginEnableEvent event) {
             Plugin p = event.getPlugin();
             String name = p.getDescription().getName();
@@ -333,11 +336,12 @@ public class DynmapResidencePlugin extends JavaPlugin {
             return;
         }
         res = (Residence)p;
+
+        getServer().getPluginManager().registerEvents(new OurServerListener(), this);        
+
         /* If both enabled, activate */
         if(dynmap.isEnabled() && res.isEnabled())
             activate();
-        else
-            getServer().getPluginManager().registerEvent(Type.PLUGIN_ENABLE, new OurServerListener(), Priority.Monitor, this);        
     }
 
     private void activate() {
@@ -386,11 +390,11 @@ public class DynmapResidencePlugin extends JavaPlugin {
                 cusstyle.put(id, new AreaStyle(cfg, "custstyle." + id, defstyle));
             }
         }
-        List vis = cfg.getList("visibleregions");
+        List<String> vis = cfg.getStringList("visibleregions");
         if(vis != null) {
             visible = new HashSet<String>(vis);
         }
-        List hid = cfg.getList("hiddenregions");
+        List<String> hid = cfg.getStringList("hiddenregions");
         if(hid != null) {
             hidden = new HashSet<String>(hid);
         }

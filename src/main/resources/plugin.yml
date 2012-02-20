@@ -2,5 +2,5 @@ name: dynmap-residence
 main: org.dynmap.residence.DynmapResidencePlugin
 version: "${project.version}"
 author: mikeprimm
-softdepend: [ dynmap, Residence ]
+depend: [ dynmap, Residence ]
 
