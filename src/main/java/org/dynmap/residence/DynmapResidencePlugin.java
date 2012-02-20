@@ -11,11 +11,6 @@ import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.CustomEventListener;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event.Type;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -31,7 +26,10 @@ import org.dynmap.markers.MarkerSet;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.economy.TransactionManager;
 import com.bekvon.bukkit.residence.economy.rent.RentManager;
-import com.bekvon.bukkit.residence.event.ResidenceEvent;
+import com.bekvon.bukkit.residence.event.ResidenceCreationEvent;
+import com.bekvon.bukkit.residence.event.ResidenceDeleteEvent;
+import com.bekvon.bukkit.residence.event.ResidenceFlagChangeEvent;
+import com.bekvon.bukkit.residence.event.ResidenceOwnerChangeEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
@@ -300,23 +298,36 @@ public class DynmapResidencePlugin extends JavaPlugin {
         }
     }
     
-    private class OurCustomEventListener extends CustomEventListener {
-    	@Override
-    	public void onCustomEvent(Event evt) {
-    	    if((evt instanceof ResidenceEvent) == false)
-    	        return;
-    		String typ = evt.getEventName();
-    		if(typ.startsWith("RESIDENCE_")) {
-    			if((evt instanceof Cancellable) && ((Cancellable)evt).isCancelled())
-    				return;
-    			if(typ.equals("RESIDENCE_CREATE") || typ.equals("RESIDENCE_FLAG_CHANGE") || typ.equals("RESIDENCE_OWNER_CHANGE") || typ.equals("RESIDENCE_DELETE")) {
-    				if(pending_oneshot == null) {
-    					pending_oneshot = new ResidenceUpdate();
-    			        getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, pending_oneshot, 20);   /* Delay a second to let other triggers fire */
-    				}
-    			}
-    		}
-    	}
+    private class OurCustomEventListener implements Listener {
+        private void fireUpdate() {
+            if(pending_oneshot == null) {
+                pending_oneshot = new ResidenceUpdate();
+                getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, pending_oneshot, 20);   /* Delay a second to let other triggers fire */
+            }
+        }
+        @SuppressWarnings("unused")
+        @EventHandler(priority=EventPriority.MONITOR)
+        public void onResidenceCreate(ResidenceCreationEvent event) {
+            if(event.isCancelled()) return;
+            fireUpdate();
+        }
+        @SuppressWarnings("unused")
+        @EventHandler(priority=EventPriority.MONITOR)
+        public void onResidenceFlagChange(ResidenceFlagChangeEvent event) {
+            if(event.isCancelled()) return;
+            fireUpdate();
+        }
+        @SuppressWarnings("unused")
+        @EventHandler(priority=EventPriority.MONITOR)
+        public void onResidenceDelete(ResidenceDeleteEvent event) {
+            if(event.isCancelled()) return;
+            fireUpdate();
+        }
+        @SuppressWarnings("unused")
+        @EventHandler(priority=EventPriority.MONITOR)
+        public void onResidenceOwnerChange(ResidenceOwnerChangeEvent event) {
+            fireUpdate();
+        }
     }
     
     public void onEnable() {
@@ -411,7 +422,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         
         /* Register custom event listener - listen for residence change events */
         if(cfg.getBoolean("update.onchange", true))
-        	getServer().getPluginManager().registerEvent(Type.CUSTOM_EVENT, new OurCustomEventListener(), Priority.Monitor, this);
+        	getServer().getPluginManager().registerEvents(new OurCustomEventListener(), this);
         
         info("version " + this.getDescription().getVersion() + " is activated");
     }
