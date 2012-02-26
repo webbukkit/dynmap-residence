@@ -62,13 +62,13 @@
   	<dependency>
   		<groupId>org.bukkit</groupId>
   		<artifactId>bukkit</artifactId>
-  		<version>1.1-R4-SNAPSHOT</version>
+  		<version>1.1-R5-SNAPSHOT</version>
   		<scope>compile</scope>
   	</dependency>
   	<dependency>
   		<groupId>com.bekvon</groupId>
   		<artifactId>Residence</artifactId>
-  		<version>2.4.2</version>
+  		<version>2.5.1</version>
   		<scope>system</scope>
   		<systemPath>${project.basedir}/Residence.jar</systemPath>
   	</dependency>
