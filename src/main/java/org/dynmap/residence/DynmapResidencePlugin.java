@@ -47,6 +47,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
     RentManager rentmgr;
     TransactionManager transmgr;
     boolean stop;
+    boolean reload = false;
     
     FileConfiguration cfg;
     MarkerSet set;
@@ -286,7 +287,6 @@ public class DynmapResidencePlugin extends JavaPlugin {
     }
 
     private class OurServerListener implements Listener {
-        @SuppressWarnings("unused")
         @EventHandler(priority=EventPriority.MONITOR)
         public void onPluginEnable(PluginEnableEvent event) {
             Plugin p = event.getPlugin();
@@ -305,25 +305,21 @@ public class DynmapResidencePlugin extends JavaPlugin {
                 getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, pending_oneshot, 20);   /* Delay a second to let other triggers fire */
             }
         }
-        @SuppressWarnings("unused")
         @EventHandler(priority=EventPriority.MONITOR)
         public void onResidenceCreate(ResidenceCreationEvent event) {
             if(event.isCancelled()) return;
             fireUpdate();
         }
-        @SuppressWarnings("unused")
         @EventHandler(priority=EventPriority.MONITOR)
         public void onResidenceFlagChange(ResidenceFlagChangeEvent event) {
             if(event.isCancelled()) return;
             fireUpdate();
         }
-        @SuppressWarnings("unused")
         @EventHandler(priority=EventPriority.MONITOR)
         public void onResidenceDelete(ResidenceDeleteEvent event) {
             if(event.isCancelled()) return;
             fireUpdate();
         }
-        @SuppressWarnings("unused")
         @EventHandler(priority=EventPriority.MONITOR)
         public void onResidenceOwnerChange(ResidenceOwnerChangeEvent event) {
             fireUpdate();
@@ -366,6 +362,12 @@ public class DynmapResidencePlugin extends JavaPlugin {
         resmgr = Residence.getResidenceManager(); /* Get residence manager */
         
         /* Load configuration */
+        if(reload) {
+            reloadConfig();
+        }
+        else {
+            reload = true;
+        }
         FileConfiguration cfg = getConfig();
         cfg.options().copyDefaults(true);   /* Load defaults, if needed */
         this.saveConfig();  /* Save updates, if needed */
