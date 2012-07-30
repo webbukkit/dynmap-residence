@@ -62,6 +62,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
     
     private static class AreaStyle {
         String strokecolor;
+        String forrentstrokecolor;
+        String forsalestrokecolor;
         double strokeopacity;
         int strokeweight;
         String fillcolor;
@@ -70,6 +72,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
 
         AreaStyle(FileConfiguration cfg, String path, AreaStyle def) {
             strokecolor = cfg.getString(path+".strokeColor", def.strokecolor);
+            forrentstrokecolor = cfg.getString(path+".forRentStrokeColor", def.forrentstrokecolor);
+            forsalestrokecolor = cfg.getString(path+".forSaleStrokeColor", def.forsalestrokecolor);
             strokeopacity = cfg.getDouble(path+".strokeOpacity", def.strokeopacity);
             strokeweight = cfg.getInt(path+".strokeWeight", def.strokeweight);
             fillcolor = cfg.getString(path+".fillColor", def.fillcolor);
@@ -79,6 +83,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
 
         AreaStyle(FileConfiguration cfg, String path) {
             strokecolor = cfg.getString(path+".strokeColor", "#FF0000");
+            forrentstrokecolor = cfg.getString(path+".forRentStrokeColor", "#007F00");
+            forsalestrokecolor = cfg.getString(path+".forSaleStrokeColor", "#007F7F");
             strokeopacity = cfg.getDouble(path+".strokeOpacity", 0.8);
             strokeweight = cfg.getInt(path+".strokeWeight", 3);
             fillcolor = cfg.getString(path+".fillColor", "#FF0000");
@@ -120,6 +126,8 @@ public class DynmapResidencePlugin extends JavaPlugin {
         String v = "<div class=\"regioninfo\">"+infowindow+"</div>";
         v = v.replace("%regionname%", res.getName());
         v = v.replace("%playerowners%", res.getOwner());
+        v = v.replace("%entermsg%",  res.getEnterMessage());
+        v = v.replace("%leavemsg%",  res.getLeaveMessage());
         ResidencePermissions p = res.getPermissions();
         String flgs = "";
         for(int i = 0; i < FLAGS.length; i++) {
@@ -195,7 +203,12 @@ public class DynmapResidencePlugin extends JavaPlugin {
         int sc = 0xFF0000;
         int fc = 0xFF0000;
         try {
-            sc = Integer.parseInt(as.strokecolor.substring(1), 16);
+            if((rentmgr != null) && rentmgr.isForRent(resid))
+                sc = Integer.parseInt(as.forrentstrokecolor.substring(1), 16);
+            else if((transmgr != null) && transmgr.isForSale(resid))
+                sc = Integer.parseInt(as.forsalestrokecolor.substring(1), 16);
+            else
+                sc = Integer.parseInt(as.strokecolor.substring(1), 16);
             fc = Integer.parseInt(as.fillcolor.substring(1), 16);
         } catch (NumberFormatException nfx) {
         }
