@@ -126,8 +126,10 @@ public class DynmapResidencePlugin extends JavaPlugin {
         String v = "<div class=\"regioninfo\">"+infowindow+"</div>";
         v = v.replace("%regionname%", res.getName());
         v = v.replace("%playerowners%", res.getOwner());
-        v = v.replace("%entermsg%",  res.getEnterMessage());
-        v = v.replace("%leavemsg%",  res.getLeaveMessage());
+        String m = res.getEnterMessage();
+        v = v.replace("%entermsg%", (m!=null)?m:"" );
+        m = res.getLeaveMessage();
+        v = v.replace("%leavemsg%", (m!=null)?m:"");
         ResidencePermissions p = res.getPermissions();
         String flgs = "";
         for(int i = 0; i < FLAGS.length; i++) {
