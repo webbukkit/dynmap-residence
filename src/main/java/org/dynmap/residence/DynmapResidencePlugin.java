@@ -1,5 +1,6 @@
 package org.dynmap.residence;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -364,6 +365,12 @@ public class DynmapResidencePlugin extends JavaPlugin {
         /* If both enabled, activate */
         if(dynmap.isEnabled() && res.isEnabled())
             activate();
+        
+        try {
+            MetricsLite ml = new MetricsLite(this);
+            ml.start();
+        } catch (IOException iox) {
+        }
     }
 
     private void activate() {
@@ -379,6 +386,10 @@ public class DynmapResidencePlugin extends JavaPlugin {
         /* Load configuration */
         if(reload) {
             reloadConfig();
+            if(set != null) {
+                set.deleteMarkerSet();
+                set = null;
+            }
         }
         else {
             reload = true;
