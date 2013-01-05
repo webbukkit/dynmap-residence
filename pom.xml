@@ -25,6 +25,15 @@
 	  </resources>
   
   	<plugins>
+ 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
   		<plugin>
   			<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
@@ -51,6 +60,24 @@
   		</plugin>
   	</plugins>
   </build>
+     <repositories>
+		<repository>
+			<releases>
+			</releases>
+			<snapshots>
+			</snapshots>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<releases>
+			</releases>
+			<snapshots>
+			</snapshots>
+			<id>dynmap-repo</id>
+			<url>http://repo.mikeprimm.com/</url>
+		</repository>
+	</repositories>
   
   <dependencies>
   	<dependency>
