@@ -286,7 +286,7 @@ public class DynmapResidencePlugin extends JavaPlugin {
         
         if(resmgr != null) {
             /* Loop through residences */
-            String[] resids = resmgr.getResidenceList();
+            String[] resids = resmgr.getResidenceList(true, false).toArray(new String[0]);
             for(String resid : resids) {
                 ClaimedResidence res = resmgr.getByName(resid);
                 if(res == null) continue;
