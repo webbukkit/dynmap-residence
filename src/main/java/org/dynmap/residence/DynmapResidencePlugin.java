@@ -37,8 +37,7 @@ import com.bekvon.bukkit.residence.protection.ResidenceManager;
 import com.bekvon.bukkit.residence.protection.ResidencePermissions;
 
 public class DynmapResidencePlugin extends JavaPlugin {
-    private static final Logger log = Logger.getLogger("Minecraft");
-    private static final String LOG_PREFIX = "[dynmap-residence] ";
+    private static Logger log;
     private static final String DEF_INFOWINDOW = "<div class=\"infowindow\"><span style=\"font-size:120%;\">%regionname%</span><br /> Owner <span style=\"font-weight:bold;\">%playerowners%</span><br />Flags<br /><span style=\"font-weight:bold;\">%flags%</span></div>";
     Plugin dynmap;
     DynmapAPI api;
@@ -60,6 +59,11 @@ public class DynmapResidencePlugin extends JavaPlugin {
     Map<String, AreaStyle> cusstyle;
     Set<String> visible;
     Set<String> hidden;
+    
+    @Override
+    public void onLoad() {
+        log = this.getLogger();
+    }
     
     private static class AreaStyle {
         String strokecolor;
@@ -95,10 +99,10 @@ public class DynmapResidencePlugin extends JavaPlugin {
     }
     
     public static void info(String msg) {
-        log.log(Level.INFO, LOG_PREFIX + msg);
+        log.log(Level.INFO, msg);
     }
     public static void severe(String msg) {
-        log.log(Level.SEVERE, LOG_PREFIX + msg);
+        log.log(Level.SEVERE, msg);
     }
 
     private class ResidenceUpdate implements Runnable {
