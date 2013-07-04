@@ -14,6 +14,7 @@ layer:
   layerprio: 1
   # (optional) set minimum zoom level before layer is visible (0 = defalt, always visible)
   minzoom: 0
+  boost: false
 
 # Set true to show 3D volumes for zones  
 use3dregions: false
@@ -32,6 +33,7 @@ regionstyle:
   fillOpacity: 0.35
   forRentStrokeColor: "#007F00"
   forSaleStrokeColor: "#007F7F"  
+  boost: false
   
 # Optional setting to limit which regions to show, by name - if commented out, all regions are shown
 # To show all regions on a given world, add 'world:<worldname>' to the list
@@ -46,7 +48,9 @@ custstyle:
   customizedregion:
     strokeColor: "#00FF00"
     y: 78
+    boost: false
   anotherregion.subzone:
     strokeColor: "#007F00"
+    boost: false
   
 
