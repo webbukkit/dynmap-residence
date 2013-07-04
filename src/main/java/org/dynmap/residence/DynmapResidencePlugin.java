@@ -31,6 +31,7 @@ import com.bekvon.bukkit.residence.event.ResidenceCreationEvent;
 import com.bekvon.bukkit.residence.event.ResidenceDeleteEvent;
 import com.bekvon.bukkit.residence.event.ResidenceFlagChangeEvent;
 import com.bekvon.bukkit.residence.event.ResidenceOwnerChangeEvent;
+import com.bekvon.bukkit.residence.event.ResidenceRenameEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
 import com.bekvon.bukkit.residence.protection.ResidenceManager;
@@ -325,23 +326,24 @@ public class DynmapResidencePlugin extends JavaPlugin {
                 getServer().getScheduler().scheduleSyncDelayedTask(DynmapResidencePlugin.this, pending_oneshot, 20);   /* Delay a second to let other triggers fire */
             }
         }
-        @EventHandler(priority=EventPriority.MONITOR)
+        @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
         public void onResidenceCreate(ResidenceCreationEvent event) {
-            if(event.isCancelled()) return;
             fireUpdate();
         }
-        @EventHandler(priority=EventPriority.MONITOR)
+        @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
         public void onResidenceFlagChange(ResidenceFlagChangeEvent event) {
-            if(event.isCancelled()) return;
             fireUpdate();
         }
-        @EventHandler(priority=EventPriority.MONITOR)
+        @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
         public void onResidenceDelete(ResidenceDeleteEvent event) {
-            if(event.isCancelled()) return;
             fireUpdate();
         }
-        @EventHandler(priority=EventPriority.MONITOR)
+        @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
         public void onResidenceOwnerChange(ResidenceOwnerChangeEvent event) {
+            fireUpdate();
+        }
+        @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+        public void onResidenceRename(ResidenceRenameEvent event) {
             fireUpdate();
         }
     }

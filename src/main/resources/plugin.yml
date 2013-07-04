@@ -1,6 +1,6 @@
 name: dynmap-residence
 main: org.dynmap.residence.DynmapResidencePlugin
-version: "${project.version}"
+version: "${project.version}-${BUILD_NUMBER}"
 author: mikeprimm
 depend: [ dynmap, Residence ]
 
